@@ -88,7 +88,7 @@
                 </div>
 
                 <div id="nutrition-chart-container" class="space-y-3 pt-1">
-                    <!-- Dynamic Progress Bars for Cals, Prot, Fat, Carbs -->
+                    <!-- Dynamic Progress Bars -->
                 </div>
             </div>
 
@@ -213,7 +213,7 @@
                 </button>
             </div>
 
-            <!-- Manual Custom Food Insertion Form Toggle -->
+            <!-- Manual Custom Food Insertion -->
             <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-3">
                 <div class="flex items-center justify-between cursor-pointer" onclick="toggleCustomFoodForm()">
                     <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
@@ -224,7 +224,7 @@
 
                 <form id="custom-food-form" onsubmit="saveCustomFood(event)" class="hidden space-y-2.5 pt-2 border-t border-slate-200">
                     <div>
-                        <input type="text" id="cf-name" placeholder="Nome Prodotto (es. Würstel, Ragù d'Anatra)" required class="w-full bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-sage-500">
+                        <input type="text" id="cf-name" placeholder="Nome Prodotto" required class="w-full bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-sage-500">
                     </div>
                     <div class="grid grid-cols-2 gap-2">
                         <select id="cf-cat" class="bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-medium focus:outline-none">
@@ -237,6 +237,7 @@
                             <option value="Legumi">Legumi</option>
                             <option value="Proteine Vegetali">Proteine Vegetali</option>
                             <option value="Cereali">Cereali</option>
+                            <option value="Frutta secca">Frutta secca</option>
                             <option value="Verdura">Verdura</option>
                             <option value="Frutta">Frutta</option>
                             <option value="Condimenti">Condimenti</option>
@@ -262,22 +263,17 @@
                 </form>
             </div>
 
-            <!-- Database Autocomplete Search to Add Stock -->
+            <!-- Database Autocomplete Search -->
             <div class="relative">
                 <input type="text" id="pantry-search-input" oninput="searchPantryDatabase(this.value)" placeholder="Cerca alimento dal database per aggiungerlo..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-sage-500">
-                <div id="pantry-search-results" class="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg z-20 max-h-40 overflow-y-auto hidden">
-                    <!-- Dynamic Autocomplete Results -->
-                </div>
+                <div id="pantry-search-results" class="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg z-20 max-h-40 overflow-y-auto hidden"></div>
             </div>
 
-            <!-- Current Pantry List -->
-            <div class="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1" id="pantry-items-list">
-                <!-- Dynamic Pantry Rows -->
-            </div>
+            <div class="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1" id="pantry-items-list"></div>
         </div>
     </div>
 
-    <!-- MODAL: UNIFIED FOOD SELECTOR FOR MEALS -->
+    <!-- MODAL: FOOD SELECTOR -->
     <div id="modal-food-selector" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-3xl max-w-md w-full p-5 shadow-xl space-y-4 max-h-[90vh] flex flex-col">
             <div class="flex items-center justify-between border-b pb-2 border-slate-100">
@@ -292,11 +288,8 @@
 
             <input type="text" id="selector-search-input" oninput="filterFoodSelectorList(this.value)" placeholder="Cerca tra tutti gli alimenti..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-sage-500">
 
-            <div class="flex-1 overflow-y-auto custom-scrollbar space-y-2" id="selector-food-list">
-                <!-- Dynamic Food Search Items -->
-            </div>
+            <div class="flex-1 overflow-y-auto custom-scrollbar space-y-2" id="selector-food-list"></div>
 
-            <!-- Quantity Input Step (Hidden until item selected) -->
             <div id="selector-qty-step" class="hidden bg-sage-50 p-3 rounded-2xl border border-sage-200 space-y-2">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-bold text-slate-800" id="selected-food-display-name">Alimento Selezionato</span>
@@ -318,7 +311,7 @@
     </div>
 
     <script>
-        // OFFICIAL FOOD DATABASE
+        // OFFICIAL FOOD DATABASE INCLUDING FRUTTA SECCA
         const DB = {
             "Petto di pollo": { cals: 105, p: 23.0, f: 1.2, c: 0.0, cat: "Carne bianca", packages: [300, 400, 500, 1000] },
             "Tacchino (fesa)": { cals: 107, p: 24.0, f: 1.0, c: 0.0, cat: "Carne bianca", packages: [300, 400, 500] },
@@ -347,19 +340,13 @@
             "Ricotta di mucca": { cals: 145, p: 8.8, f: 11.0, c: 3.5, cat: "Latticini", packages: [250, 500] },
             "Fiocchi di latte": { cals: 85, p: 12.0, f: 4.0, c: 2.0, cat: "Latticini", packages: [150, 200, 400] },
             "Yogurt greco 0%": { cals: 58, p: 10.0, f: 0.2, c: 4.0, cat: "Latticini", packages: [150, 170, 200, 500, 1000] },
-            "Yogurt magro": { cals: 45, p: 4.0, f: 0.1, c: 6.5, cat: "Latticini", packages: [125, 250, 500] },
-            "Latte parzialmente scremato": { cals: 46, p: 3.3, f: 1.6, c: 4.8, cat: "Latticini", packages: [500, 1000] },
             "Fiocchi d'avena": { cals: 370, p: 13.5, f: 7.0, c: 60.0, cat: "Cereali", packages: [380, 400, 500, 1000] },
             "Riso basmati": { cals: 350, p: 7.0, f: 0.6, c: 78.0, cat: "Cereali", packages: [500, 1000] },
-            "Riso basmati rosso (integrale)": { cals: 360, p: 7.5, f: 2.0, c: 74.0, cat: "Cereali", packages: [500, 1000] },
-            "Riso nero (es. Venere)": { cals: 355, p: 7.7, f: 2.1, c: 73.0, cat: "Cereali", packages: [500, 1000] },
             "Farro (perlato)": { cals: 340, p: 11.5, f: 1.5, c: 67.0, cat: "Cereali", packages: [400, 500, 1000] },
             "Orzo (perlato)": { cals: 325, p: 10.0, f: 1.4, c: 68.0, cat: "Cereali", packages: [400, 500] },
-            "Pasta (di semola)": { cals: 356, p: 12.0, f: 1.5, c: 72.0, cat: "Cereali", packages: [500, 1000] },
             "Pasta integrale": { cals: 340, p: 13.0, f: 2.5, c: 65.0, cat: "Cereali", packages: [500, 1000] },
-            "Quinoa": { cals: 368, p: 14.0, f: 6.0, c: 64.0, cat: "Cereali", packages: [300, 400, 500] },
             "Cous cous": { cals: 360, p: 12.0, f: 1.5, c: 73.0, cat: "Cereali", packages: [500, 1000] },
-            "Pane (bianco)": { cals: 265, p: 8.5, f: 1.5, c: 52.0, cat: "Pane", packages: [250, 400, 500] },
+            "Riso nero (es. Venere)": { cals: 355, p: 7.7, f: 2.1, c: 73.0, cat: "Cereali", packages: [500, 1000] },
             "Pane integrale": { cals: 225, p: 7.5, f: 1.2, c: 44.0, cat: "Pane", packages: [250, 400, 500] },
             "Cracker integrali": { cals: 410, p: 11.0, f: 10.0, c: 65.0, cat: "Pane", packages: [250, 300, 500] },
             "Fette biscottate": { cals: 405, p: 11.5, f: 6.0, c: 72.0, cat: "Pane", packages: [300, 400] },
@@ -367,7 +354,13 @@
             "Patate crude": { cals: 77, p: 2.0, f: 0.1, c: 17.0, cat: "Tuberi", packages: [1000, 1500, 2000, 2500, 5000] },
             "Verdura (mista)": { cals: 25, p: 1.5, f: 0.2, c: 3.5, cat: "Verdura", packages: [250, 500, 750, 1000] },
             "Olio extravergine d'oliva": { cals: 884, p: 0.0, f: 100.0, c: 0.0, cat: "Condimenti", packages: [500, 750, 1000] },
-            "Burro d'arachidi": { cals: 588, p: 25.0, f: 50.0, c: 20.0, cat: "Condimenti", packages: [250, 350, 500] }
+            // FRUTTA SECCA CATEGORY
+            "Noci": { cals: 654, p: 15.2, f: 65.2, c: 13.7, cat: "Frutta secca", packages: [100, 150, 200, 250, 500] },
+            "Mandorle": { cals: 579, p: 21.2, f: 49.9, c: 21.6, cat: "Frutta secca", packages: [100, 150, 200, 250, 500] },
+            "Arachidi": { cals: 567, p: 25.8, f: 49.2, c: 16.1, cat: "Frutta secca", packages: [100, 150, 200, 250, 500] },
+            "Nocciole": { cals: 628, p: 15.0, f: 60.8, c: 16.7, cat: "Frutta secca", packages: [100, 150, 200, 250, 500] },
+            "Pistacchi": { cals: 562, p: 20.2, f: 45.3, c: 27.2, cat: "Frutta secca", packages: [100, 150, 200, 250, 500] },
+            "Anacardi": { cals: 553, p: 18.2, f: 43.9, c: 30.2, cat: "Frutta secca", packages: [100, 150, 200, 250, 500] }
         };
 
         // EQUIVALENCE MAPPING CHAINS
@@ -398,14 +391,21 @@
             "Formaggio di capra": ["Mozzarella", "Ricotta di mucca"],
             "Ricotta di mucca": ["Mozzarella", "Fiocchi di latte"],
             "Fiocchi di latte": ["Ricotta di mucca", "Mozzarella"],
-            "Riso basmati": ["Riso basmati rosso (integrale)", "Riso nero (es. Venere)", "Farro (perlato)", "Orzo (perlato)", "Pasta (di semola)", "Pasta integrale", "Quinoa", "Cous cous", "Patate (bollite)", "Patate crude"],
+            "Riso basmati": ["Farro (perlato)", "Orzo (perlato)", "Pasta integrale", "Cous cous", "Riso nero (es. Venere)", "Patate (bollite)", "Patate crude"],
             "Patate (bollite)": ["Patate crude", "Riso basmati", "Pasta integrale"],
             "Patate crude": ["Patate (bollite)", "Riso basmati", "Pasta integrale"],
-            "Yogurt greco 0%": ["Yogurt magro", "Ricotta di mucca", "Fiocchi di latte"],
-            "Fiocchi d'avena": ["Fette biscottate", "Cracker integrali", "Pane integrale", "Riso basmati"]
+            "Yogurt greco 0%": ["Ricotta di mucca", "Fiocchi di latte"],
+            "Fiocchi d'avena": ["Fette biscottate", "Cracker integrali", "Pane integrale", "Riso basmati"],
+            // FRUTTA SECCA EQUIVALENCES CHAIN
+            "Noci": ["Mandorle", "Arachidi", "Nocciole", "Pistacchi", "Anacardi"],
+            "Mandorle": ["Arachidi", "Nocciole", "Pistacchi", "Anacardi", "Noci"],
+            "Arachidi": ["Nocciole", "Pistacchi", "Anacardi", "Noci", "Mandorle"],
+            "Nocciole": ["Pistacchi", "Anacardi", "Noci", "Mandorle", "Arachidi"],
+            "Pistacchi": ["Anacardi", "Noci", "Mandorle", "Arachidi", "Nocciole"],
+            "Anacardi": ["Noci", "Mandorle", "Arachidi", "Nocciole", "Pistacchi"]
         };
 
-        // Application State Object
+        // Application State
         let state = {
             profile: null,
             targets: null,
@@ -419,7 +419,6 @@
 
         const DAYS_ITALIAN = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"];
 
-        // APP INIT
         window.onload = function() {
             try {
                 loadStateFromStorage();
@@ -455,7 +454,7 @@
                     state = { ...state, ...parsed };
                 }
             } catch(e) {
-                console.error("Error loading saved state:", e);
+                console.error("Error loading state:", e);
             }
         }
 
@@ -463,7 +462,7 @@
             try {
                 localStorage.setItem('nutrismart_state', JSON.stringify(state));
             } catch(e) {
-                console.error("Error saving state to storage:", e);
+                console.error("Error saving state:", e);
             }
         }
 
@@ -478,31 +477,25 @@
         }
 
         function calculateTargets(p) {
-            // 1. Basal Metabolic Rate (Mifflin-St Jeor)
             let bmr = (10 * p.weight) + (6.25 * p.height) - (5 * p.age);
             bmr += (p.gender === 'M') ? 5 : -161;
 
-            // 2. Physical Activity Level (PAL)
             let pal = 1.2;
-            if (p.activity === 'leggero') pal = 1.375;      // 1-2 allenamenti/sett
-            else if (p.activity === 'moderato') pal = 1.55;  // 3-5 allenamenti/sett
-            else if (p.activity === 'intenso') pal = 1.725;  // 6-7 allenamenti/sett
+            if (p.activity === 'leggero') pal = 1.375;
+            else if (p.activity === 'moderato') pal = 1.55;
+            else if (p.activity === 'intenso') pal = 1.725;
 
-            // Total Daily Energy Expenditure (TDEE)
             let tdee = bmr * pal;
-
-            // 3. Goal & Experience Level Adjustment
             let finalCals = Math.round(tdee);
             if (p.goal === 'dimagrire') {
-                finalCals = Math.round(tdee * 0.85); // -15% Deficit
+                finalCals = Math.round(tdee * 0.85);
             } else if (p.goal === 'aumentare') {
-                let surplusPct = 0.08; // Default Principiante (+8%)
-                if (p.experience === 'intermedio') surplusPct = 0.06; // (+6%)
-                else if (p.experience === 'avanzato') surplusPct = 0.04; // (+4%)
+                let surplusPct = 0.08;
+                if (p.experience === 'intermedio') surplusPct = 0.06;
+                else if (p.experience === 'avanzato') surplusPct = 0.04;
                 finalCals = Math.round(tdee * (1 + surplusPct));
             }
 
-            // 4. Macro Calculation
             let proteinGrams = Math.round(p.weight * (p.goal === 'dimagrire' ? 2.0 : p.goal === 'aumentare' ? 2.0 : 1.8));
             let fatGrams = Math.round((finalCals * 0.25) / 9);
             let carbGrams = Math.round((finalCals - (proteinGrams * 4) - (fatGrams * 9)) / 4);
@@ -557,160 +550,167 @@
             const targetProt = state.targets ? state.targets.protein : 140;
             const targetFat = state.targets ? state.targets.fat : 65;
 
-            // MVP STRUCTURED PROTEIN POOL FOR 14 MAIN MEALS (Pranzo & Cena for 7 Days)
-            // Weekly Allocation:
-            // - Pesce: 3
-            // - Carne bianca: 3
-            // - Carne rossa: STRICTLY 1 PER WEEK
-            // - Uova: 2
-            // - Legumi: 2
-            // - Tofu / Proteine vegetali: 1
-            // - Latticini proteici: 2
-            
-            const weeklyMealPairs = [
-                {
-                    lunch: { category: "Pesce", options: ["Merluzzo", "Nasello", "Branzino", "Orata"] },
-                    dinner: { category: "Carne bianca", options: ["Petto di pollo", "Tacchino (fesa)"] }
-                },
-                {
-                    lunch: { category: "Carne bianca", options: ["Tacchino (fesa)", "Petto di pollo"] },
-                    dinner: { category: "Legumi", options: ["Lenticchie (in scatola)", "Ceci (in scatola)"] }
-                },
-                {
-                    lunch: { category: "Uova", options: ["Uova sode", "Frittata", "Uova all'occhio"] },
-                    dinner: { category: "Pesce", options: ["Salmone", "Sgombro in scatola (sgocciolato)", "Gamberetti sgusciati"] }
-                },
-                {
-                    lunch: { category: "Legumi", options: ["Ceci (in scatola)", "Lenticchie (in scatola)"] },
-                    dinner: { category: "Carne rossa", options: ["Fesa di vitello", "Manzo (taglio magro)", "Roast beef (crudo)"] }
-                },
-                {
-                    lunch: { category: "Pesce", options: ["Tonno in scatola (sgocciolato)", "Orata", "Gamberetti sgusciati"] },
-                    dinner: { category: "Proteine Vegetali", options: ["Tofu (al naturale)"] }
-                },
-                {
-                    lunch: { category: "Carne bianca", options: ["Petto di pollo", "Tacchino (fesa)"] },
-                    dinner: { category: "Uova", options: ["Uova all'occhio", "Uova sode", "Frittata"] }
-                },
-                {
-                    lunch: { category: "Latticini", options: ["Mozzarella", "Ricotta di mucca", "Formaggio di capra"] },
-                    dinner: { category: "Latticini", options: ["Fiocchi di latte", "Ricotta di mucca"] }
-                }
+            // MVP PROTEIN ROTATION POOL (14 main meals across 7 days: 3 Fish, 3 White Meat, 1 Red Meat, 2 Eggs, 2 Legumes, 1 Veg Protein, 2 Dairy)
+            const weeklyProteinSlots = [
+                { lunch: { cat: "Pesce", opts: ["Merluzzo", "Nasello", "Branzino", "Orata"] }, dinner: { cat: "Carne bianca", opts: ["Petto di pollo", "Tacchino (fesa)"] } },
+                { lunch: { cat: "Carne bianca", opts: ["Tacchino (fesa)", "Petto di pollo"] }, dinner: { cat: "Legumi", opts: ["Lenticchie (in scatola)", "Ceci (in scatola)"] } },
+                { lunch: { cat: "Uova", opts: ["Uova sode", "Frittata", "Uova all'occhio"] }, dinner: { cat: "Pesce", opts: ["Salmone", "Sgombro in scatola (sgocciolato)", "Gamberetti sgusciati"] } },
+                { lunch: { cat: "Legumi", opts: ["Ceci (in scatola)", "Lenticchie (in scatola)"] }, dinner: { cat: "Carne rossa", opts: ["Fesa di vitello", "Manzo (taglio magro)", "Roast beef (crudo)"] } },
+                { lunch: { cat: "Pesce", opts: ["Tonno in scatola (sgocciolato)", "Gamberetti sgusciati", "Orata"] }, dinner: { cat: "Proteine Vegetali", opts: ["Tofu (al naturale)"] } },
+                { lunch: { cat: "Carne bianca", opts: ["Petto di pollo", "Tacchino (fesa)"] }, dinner: { cat: "Uova", opts: ["Uova all'occhio", "Uova sode", "Frittata"] } },
+                { lunch: { cat: "Latticini", opts: ["Mozzarella", "Ricotta di mucca", "Formaggio di capra"] }, dinner: { cat: "Latticini", opts: ["Fiocchi di latte", "Ricotta di mucca"] } }
             ];
 
             const offset = (state.weekGenCount) % 7;
-            const rotatedPairs = [...weeklyMealPairs.slice(offset), ...weeklyMealPairs.slice(0, offset)];
+            const rotatedSlots = [...weeklyProteinSlots.slice(offset), ...weeklyProteinSlots.slice(0, offset)];
 
-            const carbOptions = ["Riso basmati", "Pasta integrale", "Farro (perlato)", "Patate (bollite)", "Orzo (perlato)", "Cous cous", "Riso nero (es. Venere)"];
+            const carbOptions = ["Riso basmati", "Pasta integrale", "Farro (perlato)", "Patate (bollite)", "Patate crude", "Orzo (perlato)", "Cous cous", "Riso nero (es. Venere)"];
+            
+            // FRUTTA SECCA POOL (Nuts for 2 to 5 days a week)
+            const fruttaSeccaPool = ["Noci", "Mandorle", "Arachidi", "Nocciole", "Pistacchi", "Anacardi"];
+            // Determine how many days will have nuts (between 2 and 5 based on week count)
+            const nutsDaysCount = 2 + ((state.weekGenCount * 3) % 4); // yields 2, 3, 4, or 5
+            const nutDaysIndices = [];
+            for(let i=0; i<7; i++) {
+                if ((i + state.weekGenCount) % Math.max(1, Math.round(7 / nutsDaysCount)) === 0 && nutDaysIndices.length < nutsDaysCount) {
+                    nutDaysIndices.push(i);
+                }
+            }
+            // Ensure at least 2 if not enough selected
+            while(nutDaysIndices.length < 2) {
+                let randIdx = (nutDaysIndices.length * 3) % 7;
+                if(!nutDaysIndices.includes(randIdx)) nutDaysIndices.push(randIdx);
+                else break;
+            }
 
-            // MANDATORY RULE: NO DAIRY AT BREAKFAST
+            // ZERO DAIRY AT BREAKFAST + NO SALUMI ABUSE
             const breakfastPool = [
-                [ { food: "Fiocchi d'avena", qty: 50 }, { food: "Burro d'arachidi", qty: 20 } ],
-                [ { food: "Fette biscottate", qty: 40 }, { food: "Burro d'arachidi", qty: 20 } ],
-                [ { food: "Pane integrale", qty: 60 }, { food: "Uova all'occhio", qty: 100 } ],
-                [ { food: "Fiocchi d'avena", qty: 50 }, { food: "Burro d'arachidi", qty: 15 } ],
-                [ { food: "Pane integrale", qty: 60 }, { food: "Uova sode", qty: 100 } ],
-                [ { food: "Fette biscottate", qty: 40 }, { food: "Burro d'arachidi", qty: 15 } ],
-                [ { food: "Pane integrale", qty: 50 }, { food: "Burro d'arachidi", qty: 20 } ]
+                [ { food: "Fiocchi d'avena", qty: 50 }, { food: "Fette biscottate", qty: 30 } ],
+                [ { food: "Fette biscottate", qty: 40 }, { food: "Pane integrale", qty: 40 } ],
+                [ { food: "Pane integrale", qty: 60 }, { food: "Fiocchi d'avena", qty: 40 } ],
+                [ { food: "Fiocchi d'avena", qty: 50 }, { food: "Fette biscottate", qty: 30 } ],
+                [ { food: "Pane integrale", qty: 50 }, { food: "Uova sode", qty: 100 } ],
+                [ { food: "Fette biscottate", qty: 40 }, { food: "Fiocchi d'avena", qty: 40 } ],
+                [ { food: "Pane integrale", qty: 60 }, { food: "Fette biscottate", qty: 20 } ]
             ];
 
-            // SALUMI & DAIRY IN SNACKS:
             const snack1Pool = [
                 [ { food: "Pane integrale", qty: 50 }, { food: "Bresaola", qty: 35 } ],
-                [ { food: "Fette biscottate", qty: 30 }, { food: "Burro d'arachidi", qty: 15 } ],
+                [ { food: "Cracker integrali", qty: 35 }, { food: "Prosciutto cotto", qty: 40 } ],
                 [ { food: "Pane integrale", qty: 40 }, { food: "Tonno in scatola (sgocciolato)", qty: 50 } ],
-                [ { food: "Cracker integrali", qty: 30 }, { food: "Burro d'arachidi", qty: 15 } ],
-                [ { food: "Pane integrale", qty: 50 }, { food: "Prosciutto cotto", qty: 40 } ],
-                [ { food: "Cracker integrali", qty: 35 }, { food: "Burro d'arachidi", qty: 15 } ],
-                [ { food: "Fette biscottate", qty: 30 }, { food: "Burro d'arachidi", qty: 15 } ]
+                [ { food: "Cracker integrali", qty: 30 }, { food: "Yogurt greco 0%", qty: 150 } ],
+                [ { food: "Pane integrale", qty: 50 }, { food: "Prosciutto crudo", qty: 35 } ],
+                [ { food: "Cracker integrali", qty: 35 }, { food: "Fiocchi di latte", qty: 100 } ],
+                [ { food: "Fette biscottate", qty: 30 }, { food: "Bresaola", qty: 35 } ]
             ];
 
             const snack2Pool = [
-                [ { food: "Cracker integrali", qty: 30 }, { food: "Burro d'arachidi", qty: 15 } ],
-                [ { food: "Yogurt greco 0%", qty: 150 } ],
-                [ { food: "Cracker integrali", qty: 30 }, { food: "Burro d'arachidi", qty: 15 } ],
+                [ { food: "Cracker integrali", qty: 30 }, { food: "Yogurt greco 0%", qty: 150 } ],
                 [ { food: "Fiocchi di latte", qty: 125 } ],
-                [ { food: "Fiocchi d'avena", qty: 30 }, { food: "Burro d'arachidi", qty: 15 } ],
+                [ { food: "Cracker integrali", qty: 30 }, { food: "Ricotta di mucca", qty: 100 } ],
                 [ { food: "Pane integrale", qty: 40 }, { food: "Tonno in scatola (sgocciolato)", qty: 50 } ],
-                [ { food: "Fiocchi d'avena", qty: 30 }, { food: "Burro d'arachidi", qty: 15 } ]
+                [ { food: "Yogurt greco 0%", qty: 170 } ],
+                [ { food: "Cracker integrali", qty: 35 }, { food: "Fiocchi di latte", qty: 125 } ],
+                [ { food: "Fette biscottate", qty: 30 }, { food: "Yogurt greco 0%", qty: 150 } ]
             ];
 
-            // Helper to check intra-day food collision (including egg variants)
-            function isFoodColliding(foodName, usedSet) {
-                if (foodName === "Olio extravergine d'oliva" || foodName === "Verdura (mista)") return false;
-                if (usedSet.has(foodName)) return true;
-                if (foodName.includes("Uova") || foodName.includes("Frittata")) {
-                    for (let u of usedSet) {
-                        if (u.includes("Uova") || u.includes("Frittata")) return true;
-                    }
-                }
-                return false;
-            }
-
             const mealPlan = [];
+            let weeklySalumiCount = 0;
+            let weeklySnackDairyCount = 0;
+            let weeklyMainDairyCount = 0;
 
             for (let d = 0; d < 7; d++) {
                 const usedToday = new Set();
-                const pair = rotatedPairs[d];
+                const slot = rotatedSlots[d];
 
-                // 1. Colazione
+                // 1. Colazione (No Dairy)
                 let bktIdx = (d + state.weekGenCount) % breakfastPool.length;
                 let bktItems = JSON.parse(JSON.stringify(breakfastPool[bktIdx]));
+                // If nut day, add nuts to breakfast or snack
+                if (nutDaysIndices.includes(d)) {
+                    let nutFood = fruttaSeccaPool[(d + state.weekGenCount) % fruttaSeccaPool.length];
+                    bktItems.push({ food: nutFood, qty: 25 });
+                }
                 bktItems.forEach(it => usedToday.add(it.food));
 
-                // 2. Spuntino 1 (Ensure no collision with Colazione)
+                // 2. Spuntino 1
                 let snk1Idx = (d + state.weekGenCount) % snack1Pool.length;
                 let snk1Items = JSON.parse(JSON.stringify(snack1Pool[snk1Idx]));
-                let attempts1 = 0;
-                while (snk1Items.some(it => isFoodColliding(it.food, usedToday)) && attempts1 < snack1Pool.length) {
-                    snk1Idx = (snk1Idx + 1) % snack1Pool.length;
-                    snk1Items = JSON.parse(JSON.stringify(snack1Pool[snk1Idx]));
-                    attempts1++;
-                }
+                
+                // Enforce Salumi limit (max 2 per week) & Snack Dairy limit (max 2 per week)
+                snk1Items = snk1Items.filter(it => {
+                    const isSalum = (it.food === "Bresaola" || it.food === "Prosciutto cotto" || it.food === "Prosciutto crudo");
+                    const isDairy = (it.food === "Yogurt greco 0%" || it.food === "Fiocchi di latte" || it.food === "Ricotta di mucca");
+                    if (isSalum) {
+                        if (weeklySalumiCount >= 2) return false;
+                        weeklySalumiCount++;
+                    }
+                    if (isDairy) {
+                        if (weeklySnackDairyCount >= 2) return false;
+                        weeklySnackDairyCount++;
+                    }
+                    return true;
+                });
+
+                // Ensure 1x/day uniqueness for snack items
+                snk1Items = snk1Items.filter(it => !usedToday.has(it.food));
                 snk1Items.forEach(it => usedToday.add(it.food));
 
                 // 3. Pranzo
-                // Lunch Protein (No collision with earlier meals)
-                let lunchProtCandidates = pair.lunch.options;
-                let lunchProteinFood = lunchProtCandidates.find(f => !isFoodColliding(f, usedToday)) || lunchProtCandidates[0];
+                let lunchProtCandidates = slot.lunch.opts;
+                let lunchProteinFood = lunchProtCandidates.find(f => !usedToday.has(f)) || lunchProtCandidates[0];
                 usedToday.add(lunchProteinFood);
 
-                // Lunch Carb (No collision with earlier meals)
+                let lunchDairy = (slot.lunch.cat === "Latticini");
+                if (lunchDairy) {
+                    if (weeklyMainDairyCount >= 2) {
+                        lunchProteinFood = "Petto di pollo"; // fallback if dairy limit exceeded
+                    } else {
+                        weeklyMainDairyCount++;
+                    }
+                }
+
                 let carbIdx1 = (d + state.weekGenCount) % carbOptions.length;
                 let lunchCarbFood = carbOptions[carbIdx1];
-                let carbAttempts1 = 0;
-                while (isFoodColliding(lunchCarbFood, usedToday) && carbAttempts1 < carbOptions.length) {
+                while (usedToday.has(lunchCarbFood)) {
                     carbIdx1 = (carbIdx1 + 1) % carbOptions.length;
                     lunchCarbFood = carbOptions[carbIdx1];
-                    carbAttempts1++;
                 }
                 usedToday.add(lunchCarbFood);
 
-                // 4. Spuntino 2 (Ensure no collision with earlier meals)
-                let snk2Idx = (d + state.weekGenCount) % snack2Pool.length;
+                // 4. Spuntino 2
+                let snk2Idx = (d + 2 + state.weekGenCount) % snack2Pool.length;
                 let snk2Items = JSON.parse(JSON.stringify(snack2Pool[snk2Idx]));
-                let attempts2 = 0;
-                while (snk2Items.some(it => isFoodColliding(it.food, usedToday)) && attempts2 < snack2Pool.length) {
-                    snk2Idx = (snk2Idx + 1) % snack2Pool.length;
-                    snk2Items = JSON.parse(JSON.stringify(snack2Pool[snk2Idx]));
-                    attempts2++;
-                }
+                snk2Items = snk2Items.filter(it => {
+                    const isDairy = (it.food === "Yogurt greco 0%" || it.food === "Fiocchi di latte" || it.food === "Ricotta di mucca");
+                    if (isDairy) {
+                        if (weeklySnackDairyCount >= 2) return false;
+                        weeklySnackDairyCount++;
+                    }
+                    return true;
+                });
+                snk2Items = snk2Items.filter(it => !usedToday.has(it.food));
                 snk2Items.forEach(it => usedToday.add(it.food));
 
                 // 5. Cena
-                // Dinner Protein (No collision with earlier meals)
-                let dinnerProtCandidates = pair.dinner.options;
-                let dinnerProteinFood = dinnerProtCandidates.find(f => !isFoodColliding(f, usedToday)) || dinnerProtCandidates[0];
+                let dinnerProtCandidates = slot.dinner.opts;
+                let dinnerProteinFood = dinnerProtCandidates.find(f => !usedToday.has(f)) || dinnerProtCandidates[0];
                 usedToday.add(dinnerProteinFood);
 
-                // Dinner Carb (No collision with earlier meals)
-                let carbIdx2 = (d + 2 + state.weekGenCount) % carbOptions.length;
+                let dinnerDairy = (slot.dinner.cat === "Latticini");
+                if (dinnerDairy) {
+                    if (weeklyMainDairyCount >= 2) {
+                        dinnerProteinFood = "Merluzzo";
+                    } else {
+                        weeklyMainDairyCount++;
+                    }
+                }
+
+                let carbIdx2 = (d + 3 + state.weekGenCount) % carbOptions.length;
                 let dinnerCarbFood = carbOptions[carbIdx2];
-                let carbAttempts2 = 0;
-                while (isFoodColliding(dinnerCarbFood, usedToday) && carbAttempts2 < carbOptions.length) {
+                while (usedToday.has(dinnerCarbFood)) {
                     carbIdx2 = (carbIdx2 + 1) % carbOptions.length;
                     dinnerCarbFood = carbOptions[carbIdx2];
-                    carbAttempts2++;
                 }
                 usedToday.add(dinnerCarbFood);
 
@@ -722,7 +722,7 @@
                     { name: "Cena", items: [ { food: dinnerCarbFood, qty: 200 }, { food: dinnerProteinFood, qty: 180 }, { food: "Verdura (mista)", qty: 200 }, { food: "Olio extravergine d'oliva", qty: 12 } ] }
                 ];
 
-                // Step 1: Scale Protein Items to hit Protein Target exactly
+                // Simultaneous 3-Macro Matrix Solver
                 let currentTotals = calculateMealsTotal(dayMeals);
                 let pFactor = targetProt / (currentTotals.p || 1);
                 dayMeals.forEach(m => {
@@ -734,7 +734,6 @@
                     });
                 });
 
-                // Step 2: Scale Fats to match Fat Target
                 currentTotals = calculateMealsTotal(dayMeals);
                 let currentFats = currentTotals.f;
                 let fatDeficit = targetFat - currentFats;
@@ -743,13 +742,12 @@
                         if (it.food === "Olio extravergine d'oliva") {
                             it.qty = Math.max(5, Math.round((it.qty + (fatDeficit * 0.35)) / 1) * 1);
                         }
-                        if (it.food === "Burro d'arachidi") {
-                            it.qty = Math.max(5, Math.round((it.qty + (fatDeficit * 0.15)) / 1) * 1);
+                        if (dbIsNut(it.food)) {
+                            it.qty = Math.max(15, Math.round((it.qty + (fatDeficit * 0.15)) / 5) * 5);
                         }
                     });
                 });
 
-                // Step 3: Scale Carbohydrates to absorb remaining Calorie Budget
                 currentTotals = calculateMealsTotal(dayMeals);
                 let calDeficit = targetCals - currentTotals.cals;
                 dayMeals.forEach(m => {
@@ -762,13 +760,12 @@
                     });
                 });
 
-                // Final Calorie Fine-Tuning Clamp
                 currentTotals = calculateMealsTotal(dayMeals);
                 let finalCalDiff = targetCals - currentTotals.cals;
                 if (Math.abs(finalCalDiff) > 10) {
                     dayMeals.forEach(m => {
                         m.items.forEach(it => {
-                            if (it.food === "Riso basmati" || it.food === "Pasta integrale" || it.food === "Patate (bollite)") {
+                            if (it.food === "Riso basmati" || it.food === "Pasta integrale" || it.food === "Patate (bollite)" || it.food === "Patate crude") {
                                 const dbItem = getFoodData(it.food);
                                 let adjGrams = finalCalDiff / (dbItem.cals / 100);
                                 it.qty = Math.max(20, Math.round((it.qty + adjGrams) / 5) * 5);
@@ -782,6 +779,11 @@
 
             state.mealPlan = mealPlan;
             saveStateToStorage();
+        }
+
+        function dbIsNut(foodName) {
+            const fd = getFoodData(foodName);
+            return fd && fd.cat === "Frutta secca";
         }
 
         function getFoodData(name) {
@@ -940,11 +942,11 @@
                             </div>
                             ${isEditing ? `
                                 <div class="flex items-center gap-1.5">
-                                    <button onclick="openFoodSelectorModal(${state.selectedDay}, ${mIdx}, ${iIdx})" class="w-7 h-7 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center transition" title="Sostituisci o scegli alimento">
+                                    <button onclick="openFoodSelectorModal(${state.selectedDay}, ${mIdx}, ${iIdx})" class="w-7 h-7 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center transition" title="Sostituisci alimento">
                                         <i class="fa-solid fa-plus text-xs"></i>
                                     </button>
                                     <button onclick="cycleEquivalence(${state.selectedDay}, ${mIdx}, ${iIdx})" class="w-7 h-7 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg flex items-center justify-center transition" title="Prossima equivalenza">
-                                        <i class="fa-solid fa-trash text-xs"></i>
+                                        <i class="fa-solid fa-trash-can text-xs"></i>
                                     </button>
                                 </div>
                             ` : ''}
@@ -1020,7 +1022,7 @@
                 const newDB = getFoodData(nextFood);
 
                 if (origDB && newDB && newDB.cals > 0) {
-                    item.qty = Math.max(10, Math.round((item.originalQty * origDB.cals / newDB.cals) / 5) * 5);
+                    item.qty = Math.max(5, Math.round((item.originalQty * origDB.cals / newDB.cals) / 5) * 5);
                     item.food = nextFood;
                 }
             }
@@ -1100,9 +1102,7 @@
             const deductPantry = document.getElementById('check-deduct-pantry').checked;
             if (deductPantry) {
                 const pItem = state.pantry.find(p => p.name === selectedFood);
-                if (pItem) {
-                    pItem.qty = Math.max(0, pItem.qty - qty);
-                }
+                if (pItem) pItem.qty = Math.max(0, pItem.qty - qty);
             }
 
             const newItemObj = {
@@ -1159,9 +1159,9 @@
                 if (item.food === "Uova" || item.food === "Uova sode" || item.food === "Uova all'occhio" || item.food === "Frittata") {
                     const eggCount = Math.ceil(item.netNeeded / 50);
                     const packSize = eggCount <= 4 ? 4 : eggCount <= 6 ? 6 : eggCount <= 10 ? 10 : Math.ceil(eggCount / 6) * 6;
-                    packText = `${eggCount} uova singole (${item.netNeeded}g) → Consigliata confezione da ${packSize} uova`;
+                    packText = `${eggCount} uova singole (${item.netNeeded}g) → Confezione da ${packSize} uova`;
                 } else {
-                    const packages = fd.packages || [250, 500, 1000];
+                    const packages = fd.packages || [100, 250, 500, 1000];
                     const combo = findOptimalPackageCombo(item.netNeeded, packages);
                     packText = `${item.netNeeded}g netti → Acquistare: ${combo}`;
                 }
@@ -1181,7 +1181,6 @@
 
         function findOptimalPackageCombo(needed, packages) {
             packages.sort((a, b) => b - a);
-
             let bestCombo = null;
             let minWaste = Infinity;
 
@@ -1203,7 +1202,6 @@
             }
 
             search([], 0);
-
             if (!bestCombo) return `1x ${needed}g`;
 
             const counts = {};
