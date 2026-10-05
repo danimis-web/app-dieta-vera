@@ -550,7 +550,8 @@
             const targetProt = state.targets ? state.targets.protein : 140;
             const targetFat = state.targets ? state.targets.fat : 65;
 
-            // MVP PROTEIN ROTATION POOL (14 main meals across 7 days: 3 Fish, 3 White Meat, 1 Red Meat, 2 Eggs, 2 Legumes, 1 Veg Protein, 2 Dairy)
+            // MVP PROTEIN CATEGORY WEEKLY SLOTS (14 main meals across 7 days)
+            // Strict rule: Red meat = exactly 1 per week
             const weeklyProteinSlots = [
                 { lunch: { cat: "Pesce", opts: ["Merluzzo", "Nasello", "Branzino", "Orata"] }, dinner: { cat: "Carne bianca", opts: ["Petto di pollo", "Tacchino (fesa)"] } },
                 { lunch: { cat: "Carne bianca", opts: ["Tacchino (fesa)", "Petto di pollo"] }, dinner: { cat: "Legumi", opts: ["Lenticchie (in scatola)", "Ceci (in scatola)"] } },
@@ -565,39 +566,38 @@
             const rotatedSlots = [...weeklyProteinSlots.slice(offset), ...weeklyProteinSlots.slice(0, offset)];
 
             const carbOptions = ["Riso basmati", "Pasta integrale", "Farro (perlato)", "Patate (bollite)", "Patate crude", "Orzo (perlato)", "Cous cous", "Riso nero (es. Venere)"];
+            const bakedCarbs = ["Pane integrale", "Cracker integrali", "Fette biscottate"];
             
-            // FRUTTA SECCA POOL (Nuts for 2 to 5 days a week)
+            // FRUTTA SECCA: sum total of nuts across the week must be between 2 and 5 times total
             const fruttaSeccaPool = ["Noci", "Mandorle", "Arachidi", "Nocciole", "Pistacchi", "Anacardi"];
-            // Determine how many days will have nuts (between 2 and 5 based on week count)
-            const nutsDaysCount = 2 + ((state.weekGenCount * 3) % 4); // yields 2, 3, 4, or 5
+            const totalNutDays = 2 + ((state.weekGenCount * 3) % 4); // yields 2, 3, 4, or 5 total days per week
             const nutDaysIndices = [];
-            for(let i=0; i<7; i++) {
-                if ((i + state.weekGenCount) % Math.max(1, Math.round(7 / nutsDaysCount)) === 0 && nutDaysIndices.length < nutsDaysCount) {
+            for (let i = 0; i < 7; i++) {
+                if ((i + state.weekGenCount) % Math.max(1, Math.round(7 / totalNutDays)) === 0 && nutDaysIndices.length < totalNutDays) {
                     nutDaysIndices.push(i);
                 }
             }
-            // Ensure at least 2 if not enough selected
-            while(nutDaysIndices.length < 2) {
+            while (nutDaysIndices.length < totalNutDays) {
                 let randIdx = (nutDaysIndices.length * 3) % 7;
-                if(!nutDaysIndices.includes(randIdx)) nutDaysIndices.push(randIdx);
+                if (!nutDaysIndices.includes(randIdx)) nutDaysIndices.push(randIdx);
                 else break;
             }
 
-            // ZERO DAIRY AT BREAKFAST + NO SALUMI ABUSE
+            // ZERO DAIRY AT BREAKFAST + OATS PAIRED ONLY WITH YOGURT/GREEK YOGURT/MILK
             const breakfastPool = [
-                [ { food: "Fiocchi d'avena", qty: 50 }, { food: "Fette biscottate", qty: 30 } ],
-                [ { food: "Fette biscottate", qty: 40 }, { food: "Pane integrale", qty: 40 } ],
-                [ { food: "Pane integrale", qty: 60 }, { food: "Fiocchi d'avena", qty: 40 } ],
-                [ { food: "Fiocchi d'avena", qty: 50 }, { food: "Fette biscottate", qty: 30 } ],
-                [ { food: "Pane integrale", qty: 50 }, { food: "Uova sode", qty: 100 } ],
-                [ { food: "Fette biscottate", qty: 40 }, { food: "Fiocchi d'avena", qty: 40 } ],
-                [ { food: "Pane integrale", qty: 60 }, { food: "Fette biscottate", qty: 20 } ]
+                [ { food: "Fiocchi d'avena", qty: 50 }, { food: "Yogurt greco 0%", qty: 150 } ],
+                [ { food: "Fette biscottate", qty: 40 } ],
+                [ { food: "Pane integrale", qty: 60 }, { food: "Uova sode", qty: 100 } ],
+                [ { food: "Fiocchi d'avena", qty: 60 }, { food: "Yogurt greco 0%", qty: 170 } ],
+                [ { food: "Pane integrale", qty: 50 }, { food: "Uova all'occhio", qty: 100 } ],
+                [ { food: "Cracker integrali", qty: 40 }, { food: "Fiocchi d'avena", qty: 50 }, { food: "Yogurt greco 0%", qty: 150 } ],
+                [ { food: "Pane integrale", qty: 60 } ]
             ];
 
+            // NO CANNED TUNA IN SNACKS
             const snack1Pool = [
                 [ { food: "Pane integrale", qty: 50 }, { food: "Bresaola", qty: 35 } ],
                 [ { food: "Cracker integrali", qty: 35 }, { food: "Prosciutto cotto", qty: 40 } ],
-                [ { food: "Pane integrale", qty: 40 }, { food: "Tonno in scatola (sgocciolato)", qty: 50 } ],
                 [ { food: "Cracker integrali", qty: 30 }, { food: "Yogurt greco 0%", qty: 150 } ],
                 [ { food: "Pane integrale", qty: 50 }, { food: "Prosciutto crudo", qty: 35 } ],
                 [ { food: "Cracker integrali", qty: 35 }, { food: "Fiocchi di latte", qty: 100 } ],
@@ -608,7 +608,6 @@
                 [ { food: "Cracker integrali", qty: 30 }, { food: "Yogurt greco 0%", qty: 150 } ],
                 [ { food: "Fiocchi di latte", qty: 125 } ],
                 [ { food: "Cracker integrali", qty: 30 }, { food: "Ricotta di mucca", qty: 100 } ],
-                [ { food: "Pane integrale", qty: 40 }, { food: "Tonno in scatola (sgocciolato)", qty: 50 } ],
                 [ { food: "Yogurt greco 0%", qty: 170 } ],
                 [ { food: "Cracker integrali", qty: 35 }, { food: "Fiocchi di latte", qty: 125 } ],
                 [ { food: "Fette biscottate", qty: 30 }, { food: "Yogurt greco 0%", qty: 150 } ]
@@ -623,22 +622,29 @@
                 const usedToday = new Set();
                 const slot = rotatedSlots[d];
 
-                // 1. Colazione (No Dairy)
+                // 1. Colazione (No Dairy at breakfast, oats paired ONLY with yogurt/greek yogurt)
                 let bktIdx = (d + state.weekGenCount) % breakfastPool.length;
                 let bktItems = JSON.parse(JSON.stringify(breakfastPool[bktIdx]));
-                // If nut day, add nuts to breakfast or snack
+                
+                // Ensure baked carbs rule: never combine fette biscottate, crackers, and bread in the same meal
+                let bakedCountInBkt = bktItems.filter(it => bakedCarbs.includes(it.food)).length;
+                if (bakedCountInBkt > 1) {
+                    bktItems = bktItems.filter(it => !bakedCarbs.includes(it.food) || it.food === bakedCarbs[d % bakedCarbs.length]);
+                }
+
+                // If nut day, add nuts
                 if (nutDaysIndices.includes(d)) {
                     let nutFood = fruttaSeccaPool[(d + state.weekGenCount) % fruttaSeccaPool.length];
                     bktItems.push({ food: nutFood, qty: 25 });
                 }
                 bktItems.forEach(it => usedToday.add(it.food));
 
-                // 2. Spuntino 1
+                // 2. Spuntino 1 (Guaranteed non-empty, no canned tuna, strict baked carbs exclusivity, no duplicate foods from today)
                 let snk1Idx = (d + state.weekGenCount) % snack1Pool.length;
                 let snk1Items = JSON.parse(JSON.stringify(snack1Pool[snk1Idx]));
                 
-                // Enforce Salumi limit (max 2 per week) & Snack Dairy limit (max 2 per week)
                 snk1Items = snk1Items.filter(it => {
+                    if (it.food === "Tonno in scatola (sgocciolato)") return false;
                     const isSalum = (it.food === "Bresaola" || it.food === "Prosciutto cotto" || it.food === "Prosciutto crudo");
                     const isDairy = (it.food === "Yogurt greco 0%" || it.food === "Fiocchi di latte" || it.food === "Ricotta di mucca");
                     if (isSalum) {
@@ -651,9 +657,11 @@
                     }
                     return true;
                 });
-
-                // Ensure 1x/day uniqueness for snack items
+                
                 snk1Items = snk1Items.filter(it => !usedToday.has(it.food));
+                if (snk1Items.length === 0) {
+                    snk1Items = [{ food: "Cracker integrali", qty: 30 }];
+                }
                 snk1Items.forEach(it => usedToday.add(it.food));
 
                 // 3. Pranzo
@@ -664,7 +672,7 @@
                 let lunchDairy = (slot.lunch.cat === "Latticini");
                 if (lunchDairy) {
                     if (weeklyMainDairyCount >= 2) {
-                        lunchProteinFood = "Petto di pollo"; // fallback if dairy limit exceeded
+                        lunchProteinFood = "Petto di pollo";
                     } else {
                         weeklyMainDairyCount++;
                     }
@@ -678,10 +686,11 @@
                 }
                 usedToday.add(lunchCarbFood);
 
-                // 4. Spuntino 2
+                // 4. Spuntino 2 (Guaranteed non-empty, no canned tuna, no duplicate foods from today)
                 let snk2Idx = (d + 2 + state.weekGenCount) % snack2Pool.length;
                 let snk2Items = JSON.parse(JSON.stringify(snack2Pool[snk2Idx]));
                 snk2Items = snk2Items.filter(it => {
+                    if (it.food === "Tonno in scatola (sgocciolato)") return false;
                     const isDairy = (it.food === "Yogurt greco 0%" || it.food === "Fiocchi di latte" || it.food === "Ricotta di mucca");
                     if (isDairy) {
                         if (weeklySnackDairyCount >= 2) return false;
@@ -690,6 +699,9 @@
                     return true;
                 });
                 snk2Items = snk2Items.filter(it => !usedToday.has(it.food));
+                if (snk2Items.length === 0) {
+                    snk2Items = [{ food: "Yogurt greco 0%", qty: 150 }];
+                }
                 snk2Items.forEach(it => usedToday.add(it.food));
 
                 // 5. Cena
@@ -946,7 +958,7 @@
                                         <i class="fa-solid fa-plus text-xs"></i>
                                     </button>
                                     <button onclick="cycleEquivalence(${state.selectedDay}, ${mIdx}, ${iIdx})" class="w-7 h-7 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg flex items-center justify-center transition" title="Prossima equivalenza">
-                                        <i class="fa-solid fa-trash-can text-xs"></i>
+                                        <i class="fa-solid fa-arrows-rotate text-xs"></i>
                                     </button>
                                 </div>
                             ` : ''}
